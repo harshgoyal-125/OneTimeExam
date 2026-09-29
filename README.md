@@ -3,7 +3,7 @@
 A 15-question MCQ exam for up to 60 students, with admin question editing, admin-controlled admission, per-attempt 15-minute timer, fullscreen/tab visibility logging and CSV exports. Runs on a free Render web service and MongoDB Atlas. Use Node 20+.
 
 ## Configuration
-Set `MONGODB_URI` (Atlas database URI), `ADMIN_PASSWORD` (strong secret), `SESSION_SECRET` (32+ random bytes), `PUBLIC_ORIGIN` (exact https://... Render origin), `NODE_ENV=production`. Optional `PORT`. Never commit secrets. Set your Atlas network access and database user in Atlas, and restrict database privileges to this app database. In Render select Free instance, build `npm install`, start `npm start`.
+Set `MONGODB_PASSWORD` (password for the scoped Atlas user OneTimeExamApp; server constructs the URI and URL-encodes it), `ADMIN_PASSWORD` (strong secret), `SESSION_SECRET` (32+ random bytes), `PUBLIC_ORIGIN` (exact https://... Render origin), `NODE_ENV=production`. Optional `PORT`; `MONGODB_URI` overrides the constructed URI for local testing. Never commit secrets. Set your Atlas network access and database user in Atlas, and restrict database privileges to this app database. In Render select Free instance, build `npm install`, start `npm start`.
 
 Admin route `/admin`; student entry `/`. Set duration and title, paste an optional allowed roster, add exactly 15 MCQs, and open exam. Close admission after the class joins; attempts already underway may finish. Do not share the admin password. CSV exports contain personal identifiers and must be handled securely. A roster validates college ID and roll number when supplied, but names are self-reported, so check identity separately. Without a roster, anyone with the link may enter self-reported details.
 

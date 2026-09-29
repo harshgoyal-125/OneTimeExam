@@ -8,13 +8,14 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { deadlineFor, normalizeIdentity, validateConfig, validateQuestion, safeCsvCell, grade, allowedWindow, parseRoster } from './logic.js';
 
-const required = ['MONGODB_URI','ADMIN_PASSWORD','SESSION_SECRET','PUBLIC_ORIGIN'];
-if (required.some(k => !process.env[k]) || (process.env.SESSION_SECRET || '').length < 32) {
+const required = ['ADMIN_PASSWORD','SESSION_SECRET','PUBLIC_ORIGIN'];
+if (required.some(k => !process.env[k]) || (!process.env.MONGODB_URI && !process.env.MONGODB_PASSWORD) || (process.env.SESSION_SECRET || '').length < 32) {
   console.error('Missing required configuration or SESSION_SECRET shorter than 32 characters'); process.exit(1);
 }
 const ORIGIN = process.env.PUBLIC_ORIGIN.replace(/\/$/,'');
 if (!/^https:\/\/[^/]+$/.test(ORIGIN) && process.env.NODE_ENV === 'production') throw Error('PUBLIC_ORIGIN must be an HTTPS origin');
-await mongoose.connect(process.env.MONGODB_URI, {serverSelectionTimeoutMS:10000});
+const mongoUri=process.env.MONGODB_URI || `mongodb+srv://OneTimeExamApp:${encodeURIComponent(process.env.MONGODB_PASSWORD)}@cluster0.deiixmu.mongodb.net/onetimeexam?retryWrites=true&w=majority&appName=OneTimeExam`;
+await mongoose.connect(mongoUri, {serverSelectionTimeoutMS:10000});
 const Question = mongoose.model('Question', new mongoose.Schema({text:{type:String,required:true},options:{type:[String],required:true},correct:{type:Number,required:true}}, {timestamps:true}));
 const Exam = mongoose.model('Exam', new mongoose.Schema({key:{type:String,unique:true,default:'one'},title:String,durationMinutes:Number,maxViolations:Number,open:Boolean,admitted:{type:Number,default:0},roster:[{collegeId:String,roll:String}]}, {timestamps:true}));
 const Attempt = mongoose.model('Attempt', new mongoose.Schema({collegeId:{type:String,required:true},name:{type:String,required:true},roll:{type:String,required:true,unique:true},tokenHash:{type:String,required:true},startedAt:Date,deadlineAt:Date,submittedAt:Date,submitReason:String,answers:{type:Map,of:Number,default:{}},questionSnapshot:[{questionId:String,text:String,options:[String],correct:Number}],violations:[{kind:String,at:Date}],score:Number}, {timestamps:true}));
